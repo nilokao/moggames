@@ -11,7 +11,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') popup.style.
 // função que carrega uma palavra do servidor
 async function carregarPalavra() {
     try {
-        const resp = await fetch("http://localhost:5000/mogoso");
+        const resp = await fetch("http://localhost:3001/mogoso");
         const palavra = await resp.text();
     } catch (e) {
         console.error("Erro ao buscar palavra:", e);
@@ -64,7 +64,7 @@ async function enviarPalavra() {
 
     try {
         tentativaInput.value = '';
-        const resp = await fetch("http://localhost:5000/mogoso", {
+        const resp = await fetch("http://localhost:3001/mogoso", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: "tentativa=" + encodeURIComponent(tentativa)

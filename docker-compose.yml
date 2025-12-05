@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  index:
+    build: ./index
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mogoso
+      - snake
+      - tetris
+
+  mogoso:
+    build: ./mogoso
+    ports:
+      - "3001:3001"
+
+  snake:
+    build: ./games/snake-py
+    ports:
+      - "3002:3002"
+
+  tetris:
+    build: ./tetris-js
+    ports:
+      - "3003:3003"

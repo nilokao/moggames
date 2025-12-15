@@ -8,7 +8,13 @@
     </head>
     <body>
         <div id="top">
-            <button id="tutorial"><span class="text">?</span></button>
+            <button class="buttons">
+                <span class="text">?</span>
+            </button>
+            <button class="buttons" style="margin-left: 5%;">
+                <span class="text">&#128202</span>
+            </button>
+            
             <h1 style="color: whitesmoke;">mogoso</h1>
         </div>
         <div id="popup" class="popup">
@@ -24,6 +30,22 @@
                 <img src="/src/ex3.jpeg">
             </div>
         </div>
+
+        <div id="stats-popup" class="popup">
+            <div class="popup-content">
+                <span class="close" id="close-stats">&times;</span>
+                <h1>estatísticas</h1>
+                <p>jogos: <span id="s-jogos"></span></p>
+                <p>vitórias: <span id="s-vitorias"></span></p>
+                <p>derrotas: <span id="s-derrotas"></span></p>
+                <p>winrate: <span id="s-winrate"></span>%</p>
+                <p>streak: <span id="s-streak"></span></p>
+                <p>melhor streak: <span id="s-melhor"></span></p>
+                <p>distribuição de vitórias:</p>
+                <div id="dist"></div>
+            </div>
+        </div>
+
         <div id="containers">
             <div id="r1" class="resposta">
                 <div class="letra"></div>

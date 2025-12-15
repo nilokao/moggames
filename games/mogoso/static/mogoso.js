@@ -1,21 +1,80 @@
+// ===== estatísticas do usuário =====
+
+const STATS_KEY = "mogosoStats";
+
+function getStats() {
+    return JSON.parse(localStorage.getItem(STATS_KEY)) ?? {
+        jogos: 0,
+        vitorias: 0,
+        derrotas: 0,
+        streak: 0,
+        melhorStreak: 0,
+        tentativas: [0,0,0,0,0,0]
+    };
+}
+
+function salvarStats(stats) {
+    localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+}
+
+function renderStats() {
+    const s = getStats();
+    document.getElementById("s-jogos").innerText = s.jogos;
+    document.getElementById("s-vitorias").innerText = s.vitorias;
+    document.getElementById("s-derrotas").innerText = s.derrotas;
+    document.getElementById("s-winrate").innerText = (s.vitorias / s.jogos) * 100;
+    document.getElementById("s-streak").innerText = s.streak;
+    document.getElementById("s-melhor").innerText = s.melhorStreak;
+}
+
+function renderDistribuicao() {
+    const s = getStats();
+    const dist = document.getElementById("dist");
+    dist.innerHTML = "";
+
+    s.tentativas.forEach((v, i) => {
+        const bar = document.createElement("div");
+        bar.innerText = `${i+1}: ${"█".repeat(v)}`;
+        dist.appendChild(bar);
+    });
+}
+
 // ===== tutorial =====
 const popup = document.getElementById("popup");
-const btn = document.getElementById("tutorial");
+const statsPopup = document.getElementById("stats-popup");
+const btnTutorial = document.querySelector(".buttons:nth-of-type(1)");
+const btnStats = document.querySelector(".buttons:nth-of-type(2)");
 const closeBtn = document.querySelector(".close");
+const closeStats = document.getElementById("close-stats");
 
-btn.onclick = () => {
-    popup.style.display = "block";
+btnTutorial.onclick = () => {
+    popup.style.display = "flex";
 };
 
-closeBtn.onclick = () => {
-    popup.style.display = "none";
+btnStats.onclick = () => {
+    statsPopup.style.display = "flex";
+    renderStats();
+    renderDistribuicao();
 };
 
-window.onclick = (e) => {
-    if (e.target === popup) popup.style.display = "none";
+closeBtn.onclick = () => popup.style.display = "none";
+closeStats.onclick = () => statsPopup.style.display = "none";
+
+window.onclick = e => {
+    if (e.target === popup) {
+        popup.style.display = "none";
+    }
+
+    if (e.target === statsPopup) {
+        statsPopup.style.display = "none";
+    }
 };
-document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') popup.style.display = "none";
+
+document.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+        popup.style.display = "none";
+        statsPopup.style.display = "none";
+    }
 });
 
 // ===== user =====
@@ -28,6 +87,8 @@ const userId = localStorage.getItem("mogosoUserId");
 let tentativaAtual = 1;
 let palavraAtual = Array(6).fill("");
 let cursor = 0;
+let jogoTravado = false;
+let animando = false;
 
 // ===== carregar estado =====
 async function carregarPalavra() {
@@ -48,9 +109,10 @@ async function carregarPalavra() {
     });
 
     tentativaAtual = estado.tentativas.length + 1;
-    
+
     if (estado.gameStatus !== "jogando") {
         jogoTravado = true;
+        limparCursorGlobal();
         return;
     }
 
@@ -72,27 +134,25 @@ function renderLinhaAtual() {
     }
 }
 
-let jogoTravado = false;
-
 // ===== clique nas caixas =====
 function habilitarCliqueCaixas() {
-    if (jogoTravado) return;
+    if (jogoTravado || animando) return;
 
     const linha = document.getElementById("r" + tentativaAtual);
     if (!linha) return;
 
     [...linha.getElementsByClassName("letra")].forEach((div, i) => {
         div.onclick = () => {
+            if (jogoTravado || animando) return;
             cursor = i;
             renderLinhaAtual();
         };
     });
 }
 
-
 // ===== teclado físico =====
 document.addEventListener("keydown", e => {
-    if (jogoTravado) return;
+    if (jogoTravado || animando) return;
 
     if (e.key === "ArrowLeft") {
         cursor = Math.max(0, cursor - 1);
@@ -117,14 +177,15 @@ document.addEventListener("keydown", e => {
         return;
     }
 
-    if (e.key === " ") {
-        cursor = Math.min(5, cursor + 1);
-        renderLinhaAtual();
-        return;
-    }
-
     if (e.key === "Enter") {
-        if (!palavraAtual.includes("")) enviarPalavra();
+        if (palavraAtual.includes("")) {
+            const linha = document.getElementById("r" + tentativaAtual);
+            linha.classList.add("shake");
+            toast("completa a palavra", "erro");
+            setTimeout(() => linha.classList.remove("shake"), 400);
+            return;
+        }
+        enviarPalavra();
         return;
     }
 
@@ -135,10 +196,12 @@ document.addEventListener("keydown", e => {
     }
 });
 
-
 // ===== teclado virtual =====
 document.querySelectorAll(".keyboard-button").forEach(btn => {
     btn.addEventListener("click", () => {
+        if (jogoTravado || animando) return;
+
+        animarTecla(btn);
         const tecla = btn.textContent.trim().toLowerCase();
 
         if (tecla === "enter") {
@@ -152,7 +215,7 @@ document.querySelectorAll(".keyboard-button").forEach(btn => {
                 palavraAtual[cursor] = "";
             }
             renderLinhaAtual();
-        }
+        } 
         else {
             palavraAtual[cursor] = tecla;
             if (cursor < 5) cursor++;
@@ -163,6 +226,9 @@ document.querySelectorAll(".keyboard-button").forEach(btn => {
 
 // ===== enviar =====
 async function enviarPalavra() {
+    if (animando) return;
+    animando = true;
+
     const tentativa = palavraAtual.join("");
 
     const resp = await fetch("http://localhost:3001/mogoso", {
@@ -178,18 +244,21 @@ async function enviarPalavra() {
     const letras = linha.getElementsByClassName("letra");
 
     for (let i = 0; i < 6; i++) {
-        letras[i].classList.add("flip");
-
         setTimeout(() => {
+            letras[i].classList.add("flip");
             letras[i].classList.add(
                 resultado[i] === 2 ? "verde" :
                 resultado[i] === 1 ? "amarelo" : "vermelho"
             );
-            letras[i].classList.remove("flip");
         }, i * 120);
     }
 
     atualizarTeclado(tentativa, resultado);
+    limparCursorGlobal();
+
+    setTimeout(() => {
+        animando = false;
+    }, 6 * 120 + 50);
 
     tentativaAtual++;
     palavraAtual = Array(6).fill("");
@@ -199,17 +268,36 @@ async function enviarPalavra() {
     habilitarCliqueCaixas();
 
     if (estado.gameStatus !== "jogando") {
-        if (estado.gameStatus !== "jogando") {
-            jogoTravado = true;
-            toast(
-                estado.gameStatus === "venceu" ? "ganhou, volte amanhã" : "perdeu, tente amanhã",
-                estado.gameStatus === "venceu" ? "sucesso" : "erro"
-            );
+        jogoTravado = true;
+        limparCursorGlobal();
+
+        const stats = getStats();
+        stats.jogos++;
+
+        if (estado.gameStatus === "venceu") {
+            stats.vitorias++;
+            stats.streak++;
+            stats.melhorStreak = Math.max(stats.melhorStreak, stats.streak);
+            stats.tentativas[tentativaAtual - 2]++;
+            toast("ganhou, volte amanhã", "sucesso");
+        } else {
+            stats.derrotas++;
+            stats.streak = 0;
+            toast("perdeu, tente amanhã", "erro");
         }
+
+        salvarStats(stats);
     }
+
 }
 
-// ===== teclado visual =====
+// ===== util =====
+function limparCursorGlobal() {
+    document.querySelectorAll(".letra").forEach(l =>
+        l.classList.remove("cursor")
+    );
+}
+
 function atualizarTeclado(tentativa, resultado) {
     document.querySelectorAll(".keyboard-button").forEach(btn => {
         tentativa.split("").forEach((l, i) => {
@@ -222,6 +310,11 @@ function atualizarTeclado(tentativa, resultado) {
             }
         });
     });
+}
+
+function animarTecla(btn) {
+    btn.classList.add("press");
+    setTimeout(() => btn.classList.remove("press"), 100);
 }
 
 // ===== toast =====

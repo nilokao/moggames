@@ -5,6 +5,7 @@ WORKDIR /app
 COPY mogoso.cabal .
 COPY hie.yaml .
 COPY palavras.txt .
+COPY static ./static
 
 RUN cabal update
 COPY . .

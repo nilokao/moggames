@@ -1,12 +1,14 @@
-FROM haskell:9.2.7
+FROM haskell:latest
 
 WORKDIR /app
 
 COPY mogoso.cabal .
 COPY hie.yaml .
-COPY . .
 
 RUN cabal update
+
+COPY . .
+
 RUN cabal build
 
 CMD ["cabal", "run", "mogoso"]

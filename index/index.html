@@ -1,20 +1,25 @@
 <!DOCTYPE html>
-<html>
-<body style="font-family: sans-serif;">
-  <h2>moggames</h2>
-  <ul id="lista"></ul>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>moggames</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-  <script>
-    fetch('/games')
-      .then(r => r.json())
-      .then(games => {
-        const ul = document.getElementById("lista")
-        games.forEach(g => {
-          const li = document.createElement("li")
-          li.innerHTML = `<a href="${g.url}" target="_blank">${g.name}</a>`
-          ul.appendChild(li)
-        })
-      })
-  </script>
+  <h1>moggames</h1>
+
+  <div class="games">
+        <a href="http://localhost:3001/play">mogoso</a>
+        <h2>mogoso</h2>
+        <p>wordle de 6 letras</p>
+    </a>
+
+    <a class="game-card" href="../games/outrojogo/">
+      <h2>outro jogo</h2>
+      <p>descrição curta</p>
+    </a>
+  </div>
+
 </body>
 </html>

@@ -1,26 +1,14 @@
-version: "3.9"
+version: "3.8"
 
 services:
-  index:
-    build: ./index
+  portal:
+    image: nginx
     ports:
-      - "8080:8080"
-    depends_on:
-      - mogoso
-      - snake
-      - tetris
+      - "3000:80"
+    volumes:
+      - ./portal:/usr/share/nginx/html
 
   mogoso:
-    build: ./mogoso
+    build: ./games/mogoso
     ports:
       - "3001:3001"
-
-  snake:
-    build: ./games/snake-py
-    ports:
-      - "3002:3002"
-
-  tetris:
-    build: ./tetris-js
-    ports:
-      - "3003:3003"

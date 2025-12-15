@@ -75,7 +75,9 @@ executable mogoso
         wai-extra,
         wai-middleware-static,
         random,
+        time,
         text,
+        directory,
         aeson,
         containers,
         bytestring

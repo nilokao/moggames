@@ -1,0 +1,14 @@
+{
+  "2025-12-05": {
+    "palavra": "mogoso",
+    "jogadores": {
+      "usuario123": {
+        "tentativas": [
+          ["m","o","g","o","s","o"],
+          ["t","e","s","t","e","s"]
+        ],
+        "status": "perdeu"
+      }
+    }
+  }
+}

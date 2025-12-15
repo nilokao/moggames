@@ -114,33 +114,6 @@ h1{
     margin-bottom: 10px;
 }
 
-input{
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    font-family: "Fontdiner Swanky", serif;
-    font-size: 30px;
-    border: 5px solid whitesmoke;
-    border-radius: 8px;
-    background-color: transparent;
-    transition: background-color 0.3s ease-in-out;
-    transition: color 0.3s ease-in-out;
-    text-align: center;
-    color: whitesmoke;
-    text-transform: uppercase;
-}
-
-input:focus{
-    background-color: rgb(172, 159, 159);
-    transition: background-color 0.3 ease-in-out;
-    transition: color 0.3 ease-in-out;
-    color: black
-}
-
-input::placeholder{
-    text-transform: none;
-}
-
 #containers {
     display: flex;
     flex-direction: column;
@@ -170,6 +143,7 @@ input::placeholder{
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
 }
 
 #keyboard-cont {
@@ -206,6 +180,10 @@ input::placeholder{
 .keyboard-button:nth-child(1),
 .keyboard-button:nth-child(9) {
     flex: 1.5;
+}
+
+.cursor {
+    outline: 3px solid white;
 }
 
 .verde {

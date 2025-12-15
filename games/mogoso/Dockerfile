@@ -1,23 +1,13 @@
-FROM haskell:9.6.7 AS builder
+FROM haskell:9.6
 
 WORKDIR /app
 
-COPY mogoso.cabal .
-COPY hie.yaml .
-COPY games/mogoso/palavras.txt .
+COPY games/mogoso/cabal.project* ./
+COPY games/mogoso/mogoso.cabal ./
+COPY games/mogoso/server ./server
+COPY games/mogoso/palavras.txt ./palavras.txt
 
 RUN cabal update
+RUN cabal build
 
-COPY . .
-
-RUN cabal build exe:mogoso -v0
-
-FROM debian:bullseye-slim
-
-WORKDIR /app
-
-COPY --from=builder /app/dist-newstyle/build/x86_64-linux/ghc-9.6.7/mogoso-0.1.0.0/x/mogoso/build/mogoso/mogoso .
-
-EXPOSE 3000
-
-CMD ["./mogoso"]
+CMD ["cabal", "run", "mogoso"]

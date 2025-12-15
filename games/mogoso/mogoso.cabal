@@ -73,6 +73,7 @@ executable mogoso
         wai,
         wai-extra,
         wai-middleware-static,
+        wai-cors,
         random,
         time,
         text,

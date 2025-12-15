@@ -1,3 +1,23 @@
+// ===== tutorial =====
+const popup = document.getElementById("popup");
+const btn = document.getElementById("tutorial");
+const closeBtn = document.querySelector(".close");
+
+btn.onclick = () => {
+    popup.style.display = "block";
+};
+
+closeBtn.onclick = () => {
+    popup.style.display = "none";
+};
+
+window.onclick = (e) => {
+    if (e.target === popup) popup.style.display = "none";
+};
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') popup.style.display = "none";
+});
+
 // ===== user =====
 if (!localStorage.getItem("mogosoUserId")) {
     localStorage.setItem("mogosoUserId", crypto.randomUUID());
@@ -158,10 +178,15 @@ async function enviarPalavra() {
     const letras = linha.getElementsByClassName("letra");
 
     for (let i = 0; i < 6; i++) {
-        letras[i].classList.add(
-            resultado[i] === 2 ? "verde" :
-            resultado[i] === 1 ? "amarelo" : "vermelho"
-        );
+        letras[i].classList.add("flip");
+
+        setTimeout(() => {
+            letras[i].classList.add(
+                resultado[i] === 2 ? "verde" :
+                resultado[i] === 1 ? "amarelo" : "vermelho"
+            );
+            letras[i].classList.remove("flip");
+        }, i * 120);
     }
 
     atualizarTeclado(tentativa, resultado);
@@ -174,7 +199,13 @@ async function enviarPalavra() {
     habilitarCliqueCaixas();
 
     if (estado.gameStatus !== "jogando") {
-        alert(estado.gameStatus === "venceu" ? "você venceu" : "você perdeu");
+        if (estado.gameStatus !== "jogando") {
+            jogoTravado = true;
+            toast(
+                estado.gameStatus === "venceu" ? "ganhou, volte amanhã" : "perdeu, tente amanhã",
+                estado.gameStatus === "venceu" ? "sucesso" : "erro"
+            );
+        }
     }
 }
 
@@ -191,4 +222,14 @@ function atualizarTeclado(tentativa, resultado) {
             }
         });
     });
+}
+
+// ===== toast =====
+function toast(msg, tipo = "sucesso") {
+    const cont = document.getElementById("toast-container");
+    const t = document.createElement("div");
+    t.className = `toast ${tipo}`;
+    t.innerText = msg;
+    cont.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
 }

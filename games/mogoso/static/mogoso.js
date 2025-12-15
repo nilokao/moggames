@@ -1,3 +1,5 @@
+const BASE_URL = "https://mogoso.up.railway.app";
+
 // ===== estatísticas do usuário =====
 
 const STATS_KEY = "mogosoStats";
@@ -92,7 +94,7 @@ let animando = false;
 
 // ===== carregar estado =====
 async function carregarPalavra() {
-    const resp = await fetch(`http://localhost:3001/mogoso?userId=${userId}`);
+    const resp = await fetch(`${BASE_URL}/mogoso?userId=${userId}`);
     const estado = await resp.json();
 
     estado.tentativas.forEach((tentativa, idx) => {
@@ -231,7 +233,7 @@ async function enviarPalavra() {
 
     const tentativa = palavraAtual.join("");
 
-    const resp = await fetch("http://localhost:3001/mogoso", {
+    const resp = await fetch(`${BASE_URL}/mogoso`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: `userId=${userId}&tentativa=${tentativa}`
@@ -288,7 +290,6 @@ async function enviarPalavra() {
 
         salvarStats(stats);
     }
-
 }
 
 // ===== util =====

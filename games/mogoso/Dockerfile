@@ -4,6 +4,7 @@ WORKDIR /app
 
 COPY mogoso.cabal .
 COPY hie.yaml .
+COPY palavras.txt .
 
 RUN cabal update
 

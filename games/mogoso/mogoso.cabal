@@ -68,19 +68,22 @@ executable mogoso
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends: base >=4.18 && <4.22,
-        scotty,
-        wai,
-        wai-extra,
-        wai-middleware-static,
-        wai-cors,
-        random,
-        time,
-        text,
-        directory,
-        aeson,
-        containers,
-        bytestring
+    build-depends:  base >=4.18 && <4.22
+                    , scotty
+                    , wai
+                    , wai-middleware-static
+                    , wai-extra
+                    , wai-middleware-cors
+                    , aeson
+                    , text
+                    , bytestring
+                    , time
+                    , directory
+                    , containers
+                    , transformers
+                    , mtl
+                    , io-streams
+                    , network
 
     -- Directories containing source files.
     hs-source-dirs:   server

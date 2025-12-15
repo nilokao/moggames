@@ -16,6 +16,7 @@ import GHC.Generics (Generic)
 import Data.Aeson (ToJSON, FromJSON, encode, decode)
 import System.Directory (doesFileExist, createDirectoryIfMissing)
 import qualified Data.ByteString.Lazy as B
+import Control.Exception (try, SomeException)
 
 -- estado do usuário
 data EstadoUsuario = EstadoUsuario
@@ -109,28 +110,34 @@ main = do
 
     -- POST: tentativa
     post "/mogoso" $ do
-      uidTxt <- param "userId"
-      tentativa <- param "tentativa"
+        r <- liftIO $ try $ do
+            uidTxt <- param "userId"
+            tentativa <- param "tentativa"
 
-      palavra <- liftIO $ readIORef ref
-      ws2 <- liftIO myWords
+            palavra <- readIORef ref
+            ws2 <- myWords
 
-      let uid' = TL.unpack uidTxt
-          tentativaStr = map toLower (TL.unpack tentativa)
-          wordStr = map toLower (TL.unpack palavra)
-          wsLower = map (map toLower . TL.unpack) ws2
+            let uid' = TL.unpack uidTxt
+                tentativaStr = map toLower (TL.unpack tentativa)
+                wordStr = map toLower (TL.unpack palavra)
+                wsLower = map (map toLower . TL.unpack) ws2
 
-      if tentativaStr `notElem` wsLower
-        then json ("Palavra inválida!" :: String)
-        else do
-          estado <- liftIO $ loadUser uid'
-          let resultado = testWord tentativaStr wordStr
-              novasTent = tentativas estado ++ [tentativaStr]
-              novosRes  = resultados estado ++ [resultado]
-              status
-                | tentativaStr == wordStr = "venceu"
-                | length novasTent >= 7 = "perdeu"
-                | otherwise = "jogando"
-              novoEstado = EstadoUsuario novasTent novosRes status
-          liftIO $ saveUser uid' novoEstado
-          json novoEstado
+            if tentativaStr `notElem` wsLower
+            then return $ Left "Palavra inválida!"
+            else do
+                estado <- loadUser uid'
+                let resultado = testWord tentativaStr wordStr
+                    novasTent = tentativas estado ++ [tentativaStr]
+                    novosRes  = resultados estado ++ [resultado]
+                    status
+                        | tentativaStr == wordStr = "venceu"
+                        | length novasTent >= 7 = "perdeu"
+                        | otherwise = "jogando"
+                    novoEstado = EstadoUsuario novasTent novosRes status
+                saveUser uid' novoEstado
+                return $ Right novoEstado
+
+        case r of
+            Left (e :: SomeException) -> json $ object ["erro" .= show e]
+            Right (Left msg)          -> json $ object ["erro" .= msg]
+            Right (Right estado)      -> json estado

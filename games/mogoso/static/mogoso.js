@@ -1,4 +1,4 @@
-const BASE_URL = "https://mogoso.up.railway.app";
+const BASE_URL = "https://nilokao.github.io/moggames";
 
 // ===== estatísticas do usuário =====
 

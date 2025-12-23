@@ -4,7 +4,7 @@
 import Web.Scotty
 import Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import Network.Wai.Middleware.Static
-import Network.Wai.Middleware.Cors
+import Network.Wai.Middleware.Cors (simpleCors)
 import Control.Monad.IO.Class (liftIO)
 import Data.IORef
 import qualified Data.Text.Lazy as TL
@@ -13,7 +13,7 @@ import Data.Char (toLower)
 import Data.Time.Clock (getCurrentTime, utctDay)
 import Data.Time.Calendar (toGregorian)
 import GHC.Generics (Generic)
-import Data.Aeson (ToJSON, FromJSON, encode, decode)
+import Data.Aeson (ToJSON, FromJSON, encode, decode, object, (.=))
 import System.Directory (doesFileExist, createDirectoryIfMissing)
 import qualified Data.ByteString.Lazy as B
 import Control.Exception (try, SomeException)
@@ -110,34 +110,27 @@ main = do
 
     -- POST: tentativa
     post "/mogoso" $ do
-        r <- liftIO $ try $ do
-            uidTxt <- param "userId"
-            tentativa <- param "tentativa"
+        uidTxt <- param "userId"
+        tentativa <- param "tentativa"
+        palavra <- liftIO $ readIORef ref
+        ws2 <- liftIO myWords
 
-            palavra <- readIORef ref
-            ws2 <- myWords
+        let uid' = TL.unpack uidTxt
+            tentativaStr = map toLower (TL.unpack tentativa)
+            wordStr = map toLower (TL.unpack palavra)
+            wsLower = map (map toLower . TL.unpack) ws2
 
-            let uid' = TL.unpack uidTxt
-                tentativaStr = map toLower (TL.unpack tentativa)
-                wordStr = map toLower (TL.unpack palavra)
-                wsLower = map (map toLower . TL.unpack) ws2
-
-            if tentativaStr `notElem` wsLower
-            then return $ Left "Palavra inválida!"
-            else do
-                estado <- loadUser uid'
-                let resultado = testWord tentativaStr wordStr
-                    novasTent = tentativas estado ++ [tentativaStr]
-                    novosRes  = resultados estado ++ [resultado]
-                    status
-                        | tentativaStr == wordStr = "venceu"
-                        | length novasTent >= 7 = "perdeu"
-                        | otherwise = "jogando"
-                    novoEstado = EstadoUsuario novasTent novosRes status
-                saveUser uid' novoEstado
-                return $ Right novoEstado
-
-        case r of
-            Left (e :: SomeException) -> json $ object ["erro" .= show e]
-            Right (Left msg)          -> json $ object ["erro" .= msg]
-            Right (Right estado)      -> json estado
+        estado <- liftIO $ loadUser uid'
+        if tentativaStr `notElem` wsLower
+        then json $ object ["erro" .= ("Palavra inválida!" :: String)]
+        else do
+            let resultado = testWord tentativaStr wordStr
+                novasTent = tentativas estado ++ [tentativaStr]
+                novosRes  = resultados estado ++ [resultado]
+                status
+                    | tentativaStr == wordStr = "venceu"
+                    | length novasTent >= 7   = "perdeu"
+                    | otherwise               = "jogando"
+                novoEstado = EstadoUsuario novasTent novosRes status
+            liftIO $ saveUser uid' novoEstado
+            json novoEstado
